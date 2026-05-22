@@ -14,13 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      waitlist_signups: {
+        Row: {
+          country: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          pain_point: string | null
+          phone: string
+          referral_code: string
+          referred_by: string | null
+          user_type: string
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          pain_point?: string | null
+          phone: string
+          referral_code?: string
+          referred_by?: string | null
+          user_type: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          pain_point?: string | null
+          phone?: string
+          referral_code?: string
+          referred_by?: string | null
+          user_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_waitlist_count: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
