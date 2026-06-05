@@ -260,15 +260,64 @@ export function WaitlistForm() {
         <div className="grid gap-2">
           <Label htmlFor="pain_point">
             What's your biggest problem with current banking apps?{" "}
-            <span className="text-muted-foreground">(optional)</span>
+            <span className="text-destructive">*</span>
           </Label>
           <Textarea
             id="pain_point"
             placeholder="Failed transfers, slow settlement, high FX fees…"
             rows={3}
+            required
+            minLength={10}
+            maxLength={500}
             value={form.pain_point}
             onChange={(e) => setForm({ ...form, pain_point: e.target.value })}
           />
+        </div>
+
+        {/* Honeypot — hidden from humans, bots fill it */}
+        <div className="hidden" aria-hidden="true">
+          <Label htmlFor="company">Company</Label>
+          <Input
+            id="company"
+            name="company"
+            tabIndex={-1}
+            autoComplete="off"
+            value={hp}
+            onChange={(e) => setHp(e.target.value)}
+          />
+        </div>
+
+        {/* Lightweight math CAPTCHA */}
+        <div className="grid gap-2">
+          <Label htmlFor="captcha">
+            Quick check: what is{" "}
+            <span className="font-semibold text-foreground">
+              {challenge.a} + {challenge.b}
+            </span>
+            ? <span className="text-destructive">*</span>
+          </Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="captcha"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Your answer"
+              value={captcha}
+              onChange={(e) => setCaptcha(e.target.value.replace(/\D/g, "").slice(0, 3))}
+              required
+              className="max-w-[160px]"
+            />
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={refreshChallenge}
+              aria-label="New question"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         <Button
           type="submit"
