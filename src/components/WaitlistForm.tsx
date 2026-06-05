@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -67,10 +67,15 @@ export function WaitlistForm() {
     user_type: "" as "" | "Student" | "Freelancer" | "Business Owner" | "POS Agent" | "Other",
     pain_point: "",
   });
-  const [challenge, setChallenge] = useState(() => makeChallenge());
+  const [challenge, setChallenge] = useState<{ a: number; b: number; answer: number } | null>(null);
   const [captcha, setCaptcha] = useState("");
-  const [startedAt] = useState(() => Date.now());
+  const [startedAt, setStartedAt] = useState<number | null>(null);
   const [hp, setHp] = useState(""); // honeypot
+
+  useEffect(() => {
+    setChallenge(makeChallenge());
+    setStartedAt(Date.now());
+  }, []);
 
   const refreshChallenge = () => {
     setChallenge(makeChallenge());
@@ -86,12 +91,12 @@ export function WaitlistForm() {
       return;
     }
     // Time trap: reject submissions faster than 2s
-    if (Date.now() - startedAt < 2000) {
+    if (!startedAt || Date.now() - startedAt < 2000) {
       toast.error("Please take a moment to review your answers.");
       return;
     }
     // CAPTCHA
-    if (Number(captcha) !== challenge.answer) {
+    if (!challenge || Number(captcha) !== challenge.answer) {
       toast.error("Captcha is incorrect. Please try again.");
       refreshChallenge();
       return;
@@ -292,7 +297,7 @@ export function WaitlistForm() {
           <Label htmlFor="captcha">
             Quick check: what is{" "}
             <span className="font-semibold text-foreground">
-              {challenge.a} + {challenge.b}
+              {challenge ? `${challenge.a} + ${challenge.b}` : "… + …"}
             </span>
             ? <span className="text-destructive">*</span>
           </Label>
