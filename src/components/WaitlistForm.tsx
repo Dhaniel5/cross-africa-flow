@@ -67,10 +67,15 @@ export function WaitlistForm() {
     user_type: "" as "" | "Student" | "Freelancer" | "Business Owner" | "POS Agent" | "Other",
     pain_point: "",
   });
-  const [challenge, setChallenge] = useState(() => makeChallenge());
+  const [challenge, setChallenge] = useState<{ a: number; b: number; answer: number } | null>(null);
   const [captcha, setCaptcha] = useState("");
-  const [startedAt] = useState(() => Date.now());
+  const [startedAt, setStartedAt] = useState<number | null>(null);
   const [hp, setHp] = useState(""); // honeypot
+
+  useEffect(() => {
+    setChallenge(makeChallenge());
+    setStartedAt(Date.now());
+  }, []);
 
   const refreshChallenge = () => {
     setChallenge(makeChallenge());
