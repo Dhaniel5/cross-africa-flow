@@ -13,21 +13,46 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, Copy, Sparkles } from "lucide-react";
+import { Loader2, CheckCircle2, Copy, Sparkles, RefreshCw } from "lucide-react";
+
+const NAME_RE = /^[\p{L} .'-]+$/u;
+const PHONE_RE = /^[+\d\s()-]+$/;
+const EMAIL_RE = /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i;
 
 const schema = z.object({
-  full_name: z.string().trim().min(2, "Enter your full name").max(100),
+  full_name: z
+    .string()
+    .trim()
+    .min(2, "Enter your full name")
+    .max(100, "Name is too long")
+    .regex(NAME_RE, "Name contains invalid characters"),
   phone: z
     .string()
     .trim()
     .min(7, "Enter a valid phone number")
-    .max(20)
-    .regex(/^[+\d\s()-]+$/, "Only digits and + - ( ) allowed"),
-  email: z.string().trim().email("Enter a valid email").max(255),
+    .max(20, "Phone number is too long")
+    .regex(PHONE_RE, "Only digits and + - ( ) allowed")
+    .refine((v) => v.replace(/\D/g, "").length >= 7, "Phone needs at least 7 digits"),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(255, "Email is too long")
+    .regex(EMAIL_RE, "Enter a valid email"),
   country: z.enum(["Nigeria", "Ghana", "Other"]),
   user_type: z.enum(["Student", "Freelancer", "Business Owner", "POS Agent", "Other"]),
-  pain_point: z.string().trim().max(500).optional(),
+  pain_point: z
+    .string()
+    .trim()
+    .min(10, "Please share at least a sentence (10+ characters)")
+    .max(500, "Keep it under 500 characters"),
 });
+
+function makeChallenge() {
+  const a = Math.floor(Math.random() * 9) + 1;
+  const b = Math.floor(Math.random() * 9) + 1;
+  return { a, b, answer: a + b };
+}
 
 type SuccessState = { referralCode: string };
 
@@ -42,9 +67,36 @@ export function WaitlistForm() {
     user_type: "" as "" | "Student" | "Freelancer" | "Business Owner" | "POS Agent" | "Other",
     pain_point: "",
   });
+  const [challenge, setChallenge] = useState(() => makeChallenge());
+  const [captcha, setCaptcha] = useState("");
+  const [startedAt] = useState(() => Date.now());
+  const [hp, setHp] = useState(""); // honeypot
+
+  const refreshChallenge = () => {
+    setChallenge(makeChallenge());
+    setCaptcha("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot: silently reject bots that fill hidden field
+    if (hp.trim() !== "") {
+      toast.success("You're on the list!");
+      return;
+    }
+    // Time trap: reject submissions faster than 2s
+    if (Date.now() - startedAt < 2000) {
+      toast.error("Please take a moment to review your answers.");
+      return;
+    }
+    // CAPTCHA
+    if (Number(captcha) !== challenge.answer) {
+      toast.error("Captcha is incorrect. Please try again.");
+      refreshChallenge();
+      return;
+    }
+
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Please check your inputs");
@@ -63,7 +115,7 @@ export function WaitlistForm() {
         _email: parsed.data.email,
         _country: parsed.data.country,
         _user_type: parsed.data.user_type,
-        _pain_point: parsed.data.pain_point || undefined,
+        _pain_point: parsed.data.pain_point,
         _referred_by: referredBy ?? undefined,
       });
 
@@ -73,6 +125,7 @@ export function WaitlistForm() {
         } else {
           toast.error("Something went wrong. Please try again.");
         }
+        refreshChallenge();
         return;
       }
       setSuccess({ referralCode: data as string });
@@ -207,15 +260,64 @@ export function WaitlistForm() {
         <div className="grid gap-2">
           <Label htmlFor="pain_point">
             What's your biggest problem with current banking apps?{" "}
-            <span className="text-muted-foreground">(optional)</span>
+            <span className="text-destructive">*</span>
           </Label>
           <Textarea
             id="pain_point"
             placeholder="Failed transfers, slow settlement, high FX fees…"
             rows={3}
+            required
+            minLength={10}
+            maxLength={500}
             value={form.pain_point}
             onChange={(e) => setForm({ ...form, pain_point: e.target.value })}
           />
+        </div>
+
+        {/* Honeypot — hidden from humans, bots fill it */}
+        <div className="hidden" aria-hidden="true">
+          <Label htmlFor="company">Company</Label>
+          <Input
+            id="company"
+            name="company"
+            tabIndex={-1}
+            autoComplete="off"
+            value={hp}
+            onChange={(e) => setHp(e.target.value)}
+          />
+        </div>
+
+        {/* Lightweight math CAPTCHA */}
+        <div className="grid gap-2">
+          <Label htmlFor="captcha">
+            Quick check: what is{" "}
+            <span className="font-semibold text-foreground">
+              {challenge.a} + {challenge.b}
+            </span>
+            ? <span className="text-destructive">*</span>
+          </Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="captcha"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Your answer"
+              value={captcha}
+              onChange={(e) => setCaptcha(e.target.value.replace(/\D/g, "").slice(0, 3))}
+              required
+              className="max-w-[160px]"
+            />
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={refreshChallenge}
+              aria-label="New question"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         <Button
           type="submit"
