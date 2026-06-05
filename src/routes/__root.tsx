@@ -72,14 +72,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "SOW" },
+      { name: "description", content: "SOW Africa Connect is a mobile-first waitlist landing page for a fintech platform." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "SOW" },
+      { property: "og:description", content: "SOW Africa Connect is a mobile-first waitlist landing page for a fintech platform." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "SOW" },
+      { name: "twitter:description", content: "SOW Africa Connect is a mobile-first waitlist landing page for a fintech platform." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/afZ3X6B2AVOS1Q3r1mVeyWOAJKn2/social-images/social-1780694710803-file_0000000004cc71f4b1106a2ce8c7de88.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/afZ3X6B2AVOS1Q3r1mVeyWOAJKn2/social-images/social-1780694710803-file_0000000004cc71f4b1106a2ce8c7de88.webp" },
     ],
     links: [
       {
