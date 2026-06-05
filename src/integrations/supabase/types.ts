@@ -59,6 +59,18 @@ export type Database = {
     }
     Functions: {
       get_waitlist_count: { Args: never; Returns: number }
+      submit_waitlist_signup: {
+        Args: {
+          _country: string
+          _email: string
+          _full_name: string
+          _pain_point?: string
+          _phone: string
+          _referred_by?: string
+          _user_type: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
