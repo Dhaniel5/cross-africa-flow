@@ -67,9 +67,36 @@ export function WaitlistForm() {
     user_type: "" as "" | "Student" | "Freelancer" | "Business Owner" | "POS Agent" | "Other",
     pain_point: "",
   });
+  const [challenge, setChallenge] = useState(() => makeChallenge());
+  const [captcha, setCaptcha] = useState("");
+  const [startedAt] = useState(() => Date.now());
+  const [hp, setHp] = useState(""); // honeypot
+
+  const refreshChallenge = () => {
+    setChallenge(makeChallenge());
+    setCaptcha("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot: silently reject bots that fill hidden field
+    if (hp.trim() !== "") {
+      toast.success("You're on the list!");
+      return;
+    }
+    // Time trap: reject submissions faster than 2s
+    if (Date.now() - startedAt < 2000) {
+      toast.error("Please take a moment to review your answers.");
+      return;
+    }
+    // CAPTCHA
+    if (Number(captcha) !== challenge.answer) {
+      toast.error("Captcha is incorrect. Please try again.");
+      refreshChallenge();
+      return;
+    }
+
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0]?.message ?? "Please check your inputs");
@@ -88,7 +115,7 @@ export function WaitlistForm() {
         _email: parsed.data.email,
         _country: parsed.data.country,
         _user_type: parsed.data.user_type,
-        _pain_point: parsed.data.pain_point || undefined,
+        _pain_point: parsed.data.pain_point,
         _referred_by: referredBy ?? undefined,
       });
 
@@ -98,6 +125,7 @@ export function WaitlistForm() {
         } else {
           toast.error("Something went wrong. Please try again.");
         }
+        refreshChallenge();
         return;
       }
       setSuccess({ referralCode: data as string });
