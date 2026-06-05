@@ -91,12 +91,12 @@ export function WaitlistForm() {
       return;
     }
     // Time trap: reject submissions faster than 2s
-    if (Date.now() - startedAt < 2000) {
+    if (!startedAt || Date.now() - startedAt < 2000) {
       toast.error("Please take a moment to review your answers.");
       return;
     }
     // CAPTCHA
-    if (Number(captcha) !== challenge.answer) {
+    if (!challenge || Number(captcha) !== challenge.answer) {
       toast.error("Captcha is incorrect. Please try again.");
       refreshChallenge();
       return;
