@@ -230,8 +230,9 @@ function Index() {
           <nav className="flex items-center gap-6">
             <a href="#top" className="hover:text-foreground">About</a>
             <a href="#" className="hover:text-foreground">Privacy</a>
-            <a href="mailto:hello@sow.africa" className="hover:text-foreground">
-              hello@sow.africa
+            <a href="mailto:sowglobal6@gmail.com" className="inline-flex items-center gap-1.5 hover:text-foreground">
+              <Mail className="h-3.5 w-3.5" />
+              sowglobal6@gmail.com
             </a>
           </nav>
         </div>
