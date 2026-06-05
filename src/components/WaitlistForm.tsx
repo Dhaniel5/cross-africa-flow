@@ -57,19 +57,15 @@ export function WaitlistForm() {
           ? new URLSearchParams(window.location.search).get("ref")
           : null;
 
-      const { data, error } = await supabase
-        .from("waitlist_signups")
-        .insert({
-          full_name: parsed.data.full_name,
-          phone: parsed.data.phone,
-          email: parsed.data.email,
-          country: parsed.data.country,
-          user_type: parsed.data.user_type,
-          pain_point: parsed.data.pain_point || null,
-          referred_by: referredBy,
-        })
-        .select("referral_code")
-        .single();
+      const { data, error } = await supabase.rpc("submit_waitlist_signup", {
+        _full_name: parsed.data.full_name,
+        _phone: parsed.data.phone,
+        _email: parsed.data.email,
+        _country: parsed.data.country,
+        _user_type: parsed.data.user_type,
+        _pain_point: parsed.data.pain_point || null,
+        _referred_by: referredBy,
+      });
 
       if (error) {
         if (error.code === "23505") {
@@ -79,7 +75,7 @@ export function WaitlistForm() {
         }
         return;
       }
-      setSuccess({ referralCode: data.referral_code });
+      setSuccess({ referralCode: data as string });
       toast.success("You're on the list!");
     } finally {
       setLoading(false);
