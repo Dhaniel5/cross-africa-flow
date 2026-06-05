@@ -63,8 +63,8 @@ export function WaitlistForm() {
         _email: parsed.data.email,
         _country: parsed.data.country,
         _user_type: parsed.data.user_type,
-        _pain_point: parsed.data.pain_point || null,
-        _referred_by: referredBy,
+        _pain_point: parsed.data.pain_point || undefined,
+        _referred_by: referredBy ?? undefined,
       });
 
       if (error) {
