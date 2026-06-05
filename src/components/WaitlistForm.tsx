@@ -297,7 +297,7 @@ export function WaitlistForm() {
           <Label htmlFor="captcha">
             Quick check: what is{" "}
             <span className="font-semibold text-foreground">
-              {challenge.a} + {challenge.b}
+              {challenge ? `${challenge.a} + ${challenge.b}` : "… + …"}
             </span>
             ? <span className="text-destructive">*</span>
           </Label>
