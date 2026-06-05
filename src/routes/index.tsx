@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Zap,
   Sparkles,
+  Mail,
 } from "lucide-react";
 import sowLogo from "@/assets/sow-logo.png";
 
