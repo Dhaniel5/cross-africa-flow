@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,21 +13,46 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, Copy, Sparkles } from "lucide-react";
+import { Loader2, CheckCircle2, Copy, Sparkles, RefreshCw } from "lucide-react";
+
+const NAME_RE = /^[\p{L} .'-]+$/u;
+const PHONE_RE = /^[+\d\s()-]+$/;
+const EMAIL_RE = /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i;
 
 const schema = z.object({
-  full_name: z.string().trim().min(2, "Enter your full name").max(100),
+  full_name: z
+    .string()
+    .trim()
+    .min(2, "Enter your full name")
+    .max(100, "Name is too long")
+    .regex(NAME_RE, "Name contains invalid characters"),
   phone: z
     .string()
     .trim()
     .min(7, "Enter a valid phone number")
-    .max(20)
-    .regex(/^[+\d\s()-]+$/, "Only digits and + - ( ) allowed"),
-  email: z.string().trim().email("Enter a valid email").max(255),
+    .max(20, "Phone number is too long")
+    .regex(PHONE_RE, "Only digits and + - ( ) allowed")
+    .refine((v) => v.replace(/\D/g, "").length >= 7, "Phone needs at least 7 digits"),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(255, "Email is too long")
+    .regex(EMAIL_RE, "Enter a valid email"),
   country: z.enum(["Nigeria", "Ghana", "Other"]),
   user_type: z.enum(["Student", "Freelancer", "Business Owner", "POS Agent", "Other"]),
-  pain_point: z.string().trim().max(500).optional(),
+  pain_point: z
+    .string()
+    .trim()
+    .min(10, "Please share at least a sentence (10+ characters)")
+    .max(500, "Keep it under 500 characters"),
 });
+
+function makeChallenge() {
+  const a = Math.floor(Math.random() * 9) + 1;
+  const b = Math.floor(Math.random() * 9) + 1;
+  return { a, b, answer: a + b };
+}
 
 type SuccessState = { referralCode: string };
 
